@@ -17,3 +17,18 @@ code {
 	width:70%;
 	margin:auto;
 }
+.closed{
+  background-color:orange;
+  color:white;
+  margin:10px;
+}
+.open{
+  background-color:green;
+  color:white;
+  margin:10px;
+}
+.merged{
+  background-color: purple;
+  color:white;
+  margin:10px;
+}
