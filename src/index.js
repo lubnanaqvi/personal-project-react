@@ -11,7 +11,8 @@ class App extends React.Component {
         uid: '',
         pwd: '',
         loggedIn:false,
-        message:'Please enter a username and password'
+        message:'Please enter a username and password',
+        apiData:{}
     };
     this.clickHandler=this.clickHandler.bind(this);
     this.changeHandler=this.changeHandler.bind(this);
@@ -23,6 +24,16 @@ class App extends React.Component {
     else
       this.setState({message:'Invalid username or password',loggedIn:false});
   }
+  // componentDidUpdate(){
+  // 	if(this.state.loggedIn){
+  // 		fetch('https://api.github.com/users/Reactor/events')
+  // 			.then((res)=>res.json())
+  // 			.then((data)=>{
+  // 					console.log(data);
+  // 					//this.setState({apiData:data});
+  // 				});
+  // }
+  // }
   render() {
     const style=this.state.loggedIn?{display:'none'}:{display:'block'}
     return (
