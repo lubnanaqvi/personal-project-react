@@ -12,7 +12,8 @@ class App extends React.Component {
         pwd: '',
         loggedIn:false,
         message:'Please enter a username and password',
-        apiData:'loading...'
+        eventsApiData:'loading...',
+        reposApiData:'loading...'
     };
     this.clickHandler=this.clickHandler.bind(this);
     this.changeHandler=this.changeHandler.bind(this);
@@ -25,13 +26,19 @@ class App extends React.Component {
       this.setState({message:'Invalid username or password',loggedIn:false});
   }
   componentDidUpdate(){
-  	if(this.state.loggedIn&&this.state.apiData==='loading...'){
+  	if(this.state.loggedIn&&this.state.eventsApiData==='loading...'){
+  		fetch('https://api.github.com/users/'+this.state.uid+'/repos')
+  			.then((res)=>res.json())
+  			.then((data)=>{
+  					this.setState({reposApiData:data});
+  				});
   		fetch('https://api.github.com/users/'+this.state.uid+'/events')
   			.then((res)=>res.json())
   			.then((data)=>{
-  					this.setState({apiData:data});
+  					this.setState({eventsApiData:data});
   				});
-  		}
+  	}
+
   }
   render() {
     const style=this.state.loggedIn?{display:'none'}:{display:'block'}
@@ -46,13 +53,13 @@ class App extends React.Component {
         <div>
         	<h2>ForkEvents List</h2>
         	<ul>
-        	<EventsList apiData={this.state.apiData==='loading...'?[]:this.state.apiData} etype='ForkEvent'/>
+        	<EventsList apiData={this.state.reposApiData==='loading...'?[]:this.state.reposApiData} etype='ForkEvent'/>
         	</ul>
         </div>
        	<div>
        		<h2>PullRequestEvents List</h2>
        		<ul>
-       		<EventsList apiData={this.state.apiData==='loading...'?[]:this.state.apiData} etype='PullRequestEvent' />
+       		<EventsList apiData={this.state.eventsApiData==='loading...'?[]:this.state.eventsApiData} etype='PullRequestEvent' />
        		</ul>
        	</div>
       </div>
