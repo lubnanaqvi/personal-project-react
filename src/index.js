@@ -3,63 +3,71 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import EventsList from './EventsList'
 import * as serviceWorker from './serviceWorker';
+import * as utils from './utils.js'
+
+const fetchApiData=utils.fetchApiData;
 
 class App extends React.Component {
   constructor() {
     super();
     this.state = {
         uid: '',
-        pwd: '',
         loggedIn:false,
-        message:'Please enter a username and password',
+        message:'Please enter a username',
         eventsApiData:'loading...',
-        reposApiData:'loading...'
+        reposApiData:'loading...',
+        forkEventsList:'',
+        forksfetched:false,
+        pullsfetched:false
     };
     this.clickHandler=this.clickHandler.bind(this);
     this.changeHandler=this.changeHandler.bind(this);
   }
   changeHandler=(e)=>{this.setState({[e.target.id]:e.target.value})}
   clickHandler=(e)=>{
-    if(this.state.uid!==''&&'123'===this.state.pwd)
-      this.setState({message:'Welcome back '+this.state.uid,loggedIn:true});
-    else
-      this.setState({message:'Invalid username or password',loggedIn:false});
+    if(this.state.uid!=='')
+      this.setState({message:'Welcome back '+this.state.uid, loggedIn:true});
   }
   componentDidUpdate(){
-  	if(this.state.loggedIn&&this.state.eventsApiData==='loading...'){
-  		fetch('https://api.github.com/users/'+this.state.uid+'/repos')
-  			.then((res)=>res.json())
+    const forks=[];
+    if(this.state.loggedIn&&!this.state.forksfetched&&!this.state.pullsfetched){
+  		fetchApiData('https://api.github.com/users/'+this.state.uid+'/repos')
   			.then((data)=>{
   					this.setState({reposApiData:data});
+            const repoInfoUrlList=data.filter(x=>x.fork).map(x=>x.url);
+            let requests=repoInfoUrlList.map(url=>fetchApiData(url));
+            Promise.all(requests)
+              .then(responses=>{
+                responses.map(r=>forks.push({name:r.name,url:r.parent.html_url}));
+                this.setState({forkEventsList:forks,forksfetched:true});
+                })
+              .catch(err=>console.log(err));
   				});
-  		fetch('https://api.github.com/users/'+this.state.uid+'/events')
-  			.then((res)=>res.json())
+  		fetchApiData('https://api.github.com/users/'+this.state.uid+'/events')
   			.then((data)=>{
-  					this.setState({eventsApiData:data});
+  					this.setState({eventsApiData:data,pullsfetched:true});
   				});
   	}
 
   }
   render() {
     const style=this.state.loggedIn?{display:'none'}:{display:'block'}
+    const revstyle=this.state.loggedIn?{display:'block'}:{display:'none'}
     return (
       <div className="myApp">
         <h4>{this.state.message}</h4>
-        <input id='uid' placeholder="Enter Username" onChange={this.changeHandler} style={style}/>
-        <br />
-        <input id='pwd' type="password" placeholder="Enter Password" onChange={this.changeHandler} style={style}/>
-        <br />
-        <button onClick={this.clickHandler}>Log in</button>
-        <div>
+        <input id='uid' onChange={this.changeHandler} style={style}/>
+        <button onClick={this.clickHandler}>Show Lists</button>
+        <div style={revstyle}>
         	<h2>ForkEvents List</h2>
         	<ul>
-        	<EventsList apiData={this.state.reposApiData==='loading...'?[]:this.state.reposApiData} etype='ForkEvent'/>
+        	<EventsList apiData={this.state.forkEventsList} isfetched={this.state.forksfetched} etype='ForkEvent'/>
         	</ul>
         </div>
-       	<div>
+       	<div style={revstyle}>
        		<h2>PullRequestEvents List</h2>
        		<ul>
-       		<EventsList apiData={this.state.eventsApiData==='loading...'?[]:this.state.eventsApiData} etype='PullRequestEvent' />
+       		<EventsList apiData={this.state.eventsApiData} isfetched={this.state.pullsfetched} etype='PullRequestEvent' />
        		</ul>
        	</div>
       </div>
