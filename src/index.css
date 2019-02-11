@@ -12,10 +12,17 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
-
+body{
+  background-image:linear-gradient(#00FFFF,#004040);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
 .myApp{
-	width:70%;
+	width:50%;
 	margin:auto;
+  min-height: 500px;
+  background-color: white;
+  padding:2%;
 }
 .closed{
   background-color:red;
